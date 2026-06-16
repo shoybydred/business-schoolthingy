@@ -1,3 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athletism — Custom School Jerseys</title>
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --black:    #080808;
+      --dark:     #0f0f0f;
+      --card:     #141414;
+      --card2:    #181818;
+      --white:    #f0f0f0;
+      --muted:    #aaa;
+      --border:   #222;
+      --red:      #cc0000;
+      --red-dark: #990000;
+      --red-glow: rgba(204,0,0,0.18);
+      --red-glow2:rgba(204,0,0,0.06);
+      --font-d: 'Arial Black', 'Impact', sans-serif;
+      --font-b: 'Arial', Helvetica, sans-serif;
+      --r: 12px;
+      --max: 1120px;
+      --transition: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-b);
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.7;
+      cursor: none;
+      overflow-x: hidden;
+    }
+    img { display: block; width: 100%; border-radius: var(--r); }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
 
     /* ── CURSOR TRAIL ── */
     #cursor-dot {
