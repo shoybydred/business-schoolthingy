@@ -4,316 +4,1572 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Athletism — Custom School Jerseys</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --black:    #080808;
+      --dark:     #0f0f0f;
+      --card:     #141414;
+      --card2:    #181818;
+      --white:    #f0f0f0;
+      --muted:    #aaa;
+      --border:   #222;
+      --red:      #cc0000;
+      --red-dark: #990000;
+      --red-glow: rgba(204,0,0,0.18);
+      --red-glow2:rgba(204,0,0,0.06);
+      --font-d: 'Arial Black', 'Impact', sans-serif;
+      --font-b: 'Arial', Helvetica, sans-serif;
+      --r: 12px;
+      --max: 1120px;
+      --transition: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-b);
+      background: var(--black);
+      color: var(--white);
+      line-height: 1.7;
+      cursor: none;
+      overflow-x: hidden;
+    }
+    img { display: block; width: 100%; border-radius: var(--r); }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+
+    /* ── CURSOR TRAIL ── */
+    #cursor-dot {
+      position: fixed;
+      width: 10px; height: 10px;
+      background: var(--red);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: opacity 0.3s;
+      box-shadow: 0 0 12px 4px var(--red-glow);
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1.5px solid rgba(204,0,0,0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, border-color 0.2s;
+    }
+    .trail-particle {
+      position: fixed;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--red);
+      pointer-events: none;
+      z-index: 9997;
+      transform: translate(-50%, -50%);
+      opacity: 0.6;
+    }
+    body:has(a:hover) #cursor-ring,
+    body:has(button:hover) #cursor-ring {
+      width: 52px; height: 52px;
+      border-color: var(--red);
+    }
+
+    /* ── NAV ── */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.1rem 3rem;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid #1a1a1a;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+    }
+    .nav-logo {
+      font-family: var(--font-d);
+      font-size: 1.2rem;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      text-shadow: 0 0 20px rgba(204,0,0,0.5);
+    }
+    .nav-links { display: flex; gap: 2.5rem; }
+    .nav-links a {
+      color: #888;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      position: relative;
+      transition: color var(--transition);
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--red);
+      transition: width var(--transition);
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── HERO ── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      min-height: 92vh;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 5rem 3rem;
+      align-items: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(204,0,0,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 28px; height: 1px;
+      background: var(--red);
+    }
+    .hero-title {
+      font-family: var(--font-d);
+      font-size: clamp(3.5rem, 8vw, 6.5rem);
+      line-height: 0.92;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.01em;
+    }
+    .hero-title .line2 { color: var(--red); display: block; }
+    .hero-sub {
+      color: #999;
+      font-size: 1rem;
+      max-width: 400px;
+      margin-bottom: 2.8rem;
+      line-height: 1.85;
+    }
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .hero-img {
+      position: relative;
+      padding-left: 3rem;
+    }
+    .hero-img .img-frame {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .hero-img .img-frame::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 17px;
+      background: linear-gradient(135deg, var(--red) 0%, transparent 60%);
+      z-index: 0;
+    }
+    .hero-img .img-frame img,
+    .hero-img .img-frame .img-slot {
+      position: relative;
+      z-index: 1;
+      border-radius: 15px;
+    }
+    .hero-img .img-frame .img-slot {
+      background: #111;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .hero-img .img-frame .img-slot .slot-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: #333;
+      text-transform: uppercase;
+    }
+    .hero-img .img-frame .img-slot .slot-icon {
+      width: 48px; height: 48px;
+      border: 1px solid #222;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero-img .img-frame .img-slot .slot-icon svg { opacity: 0.2; }
+    .hero-badge {
+      position: absolute;
+      bottom: 2rem; left: 1rem;
+      background: rgba(8,8,8,0.9);
+      border: 1px solid #222;
+      backdrop-filter: blur(12px);
+      border-radius: 10px;
+      padding: 1rem 1.4rem;
+      z-index: 2;
+    }
+    .hero-badge .badge-val {
+      font-family: var(--font-d);
+      font-size: 1.6rem;
+      color: var(--red);
+      line-height: 1;
+    }
+    .hero-badge .badge-lab { font-size: 0.68rem; color: #888; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.2rem; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: inline-block;
+      background: var(--red);
+      color: var(--white);
+      padding: 0.95rem 2.4rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(204,0,0,0.4); }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-outline {
+      display: inline-block;
+      border: 1px solid #2a2a2a;
+      color: #999;
+      padding: 0.95rem 2.4rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: border-color var(--transition), color var(--transition), transform var(--transition);
+    }
+    .btn-outline:hover { border-color: #444; color: var(--white); transform: translateY(-3px); }
+
+    /* ── SECTION BASE ── */
+    .s { padding: 8rem 3rem; }
+    .s-dark { background: var(--dark); }
+    .s-red { background: var(--red-dark); }
+    .wrap { max-width: var(--max); margin: 0 auto; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+    .center { text-align: center; }
+
+    /* ── TYPE ── */
+    .eyebrow {
+      font-size: 0.62rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .eyebrow.center { justify-content: center; }
+    .eyebrow::before {
+      content: '';
+      display: inline-block;
+      width: 20px; height: 1px;
+      background: var(--red);
+      flex-shrink: 0;
+    }
+    .eyebrow.center::before { display: none; }
+    h2 {
+      font-family: var(--font-d);
+      font-size: clamp(1.9rem, 4vw, 2.8rem);
+      text-transform: uppercase;
+      line-height: 1.05;
+      margin-bottom: 1.4rem;
+      letter-spacing: -0.01em;
+    }
+    h3 { font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--white); font-weight: 700; letter-spacing: 0.03em; }
+    p { color: var(--muted); font-size: 0.93rem; margin-bottom: 0.8rem; line-height: 1.85; }
+    strong { color: var(--white); }
+    .section-intro { color: #888; font-size: 0.95rem; max-width: 560px; margin: 0 auto 3.5rem; line-height: 1.9; }
+
+    /* ── IMG SLOT ── */
+    .img-slot {
+      background: #0e0e0e;
+      border: 1px dashed #1e1e1e;
+      border-radius: var(--r);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      padding: 4rem 2rem;
+      color: #2a2a2a;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .img-slot:hover { border-color: #333; }
+    .img-slot-sm { min-height: 180px; padding: 2rem 1.5rem; }
+    .img-slot svg { opacity: 0.12; }
+
+    /* ── TAGS ── */
+    .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+    .tag {
+      background: transparent;
+      border: 1px solid #1e1e1e;
+      color: #3a3a3a;
+      font-size: 0.7rem;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: border-color var(--transition), color var(--transition);
+    }
+    .tag:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── DIVIDER LINE ── */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #1e1e1e 20%, #1e1e1e 80%, transparent);
+      margin: 0;
+    }
+
+    /* ── PRODUCTION SECTION ── */
+    .prod-flow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin-top: 3.5rem;
+      border: 1px solid #1a1a1a;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .prod-panel {
+      background: var(--card);
+      padding: 3rem 2.5rem;
+      position: relative;
+      transition: background var(--transition);
+    }
+    .prod-panel:hover { background: #161616; }
+    .prod-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid transparent;
+      border-radius: 0;
+      transition: border-color var(--transition);
+      pointer-events: none;
+    }
+    .prod-panel:hover::after { border-color: rgba(204,0,0,0.2); }
+    .prod-num {
+      font-family: var(--font-d);
+      font-size: 3.5rem;
+      color: #1a1a1a;
+      line-height: 1;
+      margin-bottom: 1.2rem;
+      transition: color var(--transition);
+    }
+    .prod-panel:hover .prod-num { color: rgba(204,0,0,0.15); }
+    .prod-panel h3 { font-size: 1rem; margin-bottom: 0.6rem; }
+    .prod-panel .sub-items { margin-top: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .prod-panel .sub-item {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.82rem; color: #888;
+      transition: color var(--transition);
+    }
+    .prod-panel:hover .sub-item { color: #bbb; }
+    .sub-item::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--red);
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+    .prod-img-slot {
+      grid-column: span 2;
+      background: #0c0c0c;
+      border-top: 1px solid #1a1a1a;
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.8rem;
+      color: #222;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .prod-img-slot svg { opacity: 0.08; }
+
+    /* ── FACTORS GRID ── */
+    .factors-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      margin-top: 3.5rem;
+      border: 1px solid #1a1a1a;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .factor-card {
+      background: var(--card);
+      padding: 2.2rem 2rem;
+      position: relative;
+      transition: background var(--transition);
+      overflow: hidden;
+    }
+    .factor-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition);
+    }
+    .factor-card:hover { background: #161616; }
+    .factor-card:hover::before { transform: scaleX(1); }
+    .factor-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #777;
+      margin-bottom: 0.6rem;
+    }
+    .factor-card h3 { font-size: 1.05rem; }
+    .factor-card p { font-size: 0.82rem; margin: 0; }
+    .factor-card .factor-img {
+      margin-top: 1.2rem;
+      min-height: 100px;
+      background: #0e0e0e;
+      border-radius: 8px;
+      border: 1px dashed #1a1a1a;
+      display: flex; align-items: center; justify-content: center;
+      color: #1e1e1e;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* ── MARKETING SECTION ── */
+    .market-hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 4rem;
+      align-items: start;
+      margin-bottom: 5rem;
+    }
+    .four-ps {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 2rem;
+    }
+    .ps-cell {
+      background: var(--card2);
+      padding: 1.8rem 1.6rem;
+      transition: background var(--transition);
+      position: relative;
+    }
+    .ps-cell:hover { background: #1c1c1c; }
+    .ps-cell .ps-letter {
+      font-family: var(--font-d);
+      font-size: 2.4rem;
+      color: var(--red);
+      opacity: 0.2;
+      line-height: 1;
+      margin-bottom: 0.4rem;
+      transition: opacity var(--transition);
+    }
+    .ps-cell:hover .ps-letter { opacity: 0.4; }
+    .ps-cell h3 { font-size: 0.88rem; }
+    .ps-cell p { font-size: 0.8rem; margin: 0; }
+
+    /* ── BRANDING ── */
+    .branding-block {
+      margin-top: 5rem;
+      padding-top: 5rem;
+      border-top: 1px solid #1a1a1a;
+    }
+    .branding-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .brand-card {
+      background: var(--card);
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 2rem 1.8rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .brand-card:hover {
+      border-color: rgba(204,0,0,0.3);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px var(--red-glow);
+    }
+    .brand-card .brand-img-slot {
+      width: 100%;
+      height: 120px;
+      background: #0e0e0e;
+      border-radius: 8px;
+      border: 1px dashed #1a1a1a;
+      margin-bottom: 1.4rem;
+      display: flex; align-items: center; justify-content: center;
+      color: #1e1e1e;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: border-color var(--transition);
+    }
+    .brand-card:hover .brand-img-slot { border-color: #2a2a2a; }
+
+    /* ── PACKAGING BLOCK ── */
+    .pack-block {
+      margin-top: 5rem;
+      padding-top: 5rem;
+      border-top: 1px solid #1a1a1a;
+    }
+    .pack-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      margin-top: 2.5rem;
+    }
+    .pack-img-main {
+      aspect-ratio: 4/3;
+      background: #0e0e0e;
+      border: 1px dashed #1a1a1a;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      gap: 0.8rem;
+      color: #222;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .pack-functions { display: flex; flex-direction: column; gap: 0; }
+    .pack-fn {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+      align-items: start;
+      padding: 1.8rem 0;
+      border-bottom: 1px solid #141414;
+      transition: border-color var(--transition);
+    }
+    .pack-fn:last-child { border-bottom: none; }
+    .pack-fn:hover { border-color: #2a2a2a; }
+    .pack-fn-num {
+      font-family: var(--font-d);
+      font-size: 0.68rem;
+      color: var(--red);
+      opacity: 0.6;
+      letter-spacing: 0.1em;
+      padding-top: 0.15rem;
+    }
+    .pack-fn h3 { font-size: 0.92rem; margin-bottom: 0.3rem; }
+    .pack-fn p { margin: 0; font-size: 0.84rem; }
+
+    /* ── ADVERTISING BLOCK ── */
+    .ads-block {
+      margin-top: 5rem;
+      padding-top: 5rem;
+      border-top: 1px solid #1a1a1a;
+    }
+    .ads-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2.5rem; }
+    .ads-main {
+      grid-row: span 2;
+      background: #0d0d0d;
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 2.5rem;
+      display: flex; flex-direction: column;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .ads-main:hover { border-color: rgba(204,0,0,0.25); box-shadow: 0 0 40px rgba(204,0,0,0.06); }
+    .ads-sub {
+      background: var(--card);
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 2rem;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .ads-sub:hover { border-color: rgba(204,0,0,0.2); transform: translateX(4px); }
+    .ads-tag {
+      display: inline-block;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      border: 1px solid #2a2a2a;
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      color: #777;
+      margin-bottom: 1.2rem;
+    }
+    .pros-cons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+    .pc-col { }
+    .pc-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+    .pc-label.g { color: #5cb85c; }
+    .pc-label.r { color: var(--red); }
+    .pc-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .pc-list li {
+      font-size: 0.82rem;
+      color: #aaa;
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      line-height: 1.7;
+    }
+    .pc-list li::before {
+      content: '';
+      width: 3px; height: 3px;
+      border-radius: 50%;
+      background: currentColor;
+      margin-top: 0.55rem;
+      flex-shrink: 0;
+    }
+
+    /* ── SALES PROMOS ── */
+    .promo-block {
+      margin-top: 5rem;
+      padding-top: 5rem;
+      border-top: 1px solid #1a1a1a;
+    }
+    .promo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem; }
+    .promo-card {
+      background: var(--card);
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 2rem 1.8rem;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+      overflow: hidden;
+      position: relative;
+    }
+    .promo-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+      transform: scaleX(0);
+      transition: transform var(--transition);
+    }
+    .promo-card:hover { border-color: rgba(204,0,0,0.2); transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
+    .promo-card:hover::before { transform: scaleX(1); }
+    .promo-card .card-img-slot {
+      width: 100%; height: 100px;
+      background: #0e0e0e;
+      border-radius: 8px;
+      border: 1px dashed #1a1a1a;
+      margin-bottom: 1.4rem;
+      display: flex; align-items: center; justify-content: center;
+      color: #1e1e1e;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* ── CUSTOMIZE SECTION ── */
+    .cust-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .cust-card {
+      background: var(--card);
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 0;
+      overflow: hidden;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .cust-card:hover {
+      border-color: rgba(204,0,0,0.3);
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 40px var(--red-glow);
+    }
+    .cust-img-slot {
+      width: 100%; height: 160px;
+      background: #0e0e0e;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
+      gap: 0.6rem;
+      color: #1e1e1e;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-bottom: 1px solid #161616;
+    }
+    .cust-body { padding: 1.6rem 1.4rem; }
+    .cust-num {
+      font-family: var(--font-d);
+      font-size: 0.7rem;
+      color: var(--red);
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── PROCESS STEPS ── */
+    .steps-track {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 3.5rem;
+      position: relative;
+    }
+    .steps-track::before {
+      content: '';
+      position: absolute;
+      top: 27px; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #1e1e1e 20%, #1e1e1e 80%, transparent);
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 1rem;
+      position: relative;
+    }
+    .step-dot {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      border: 1px solid #222;
+      background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+      font-family: var(--font-d);
+      font-size: 1rem;
+      color: #2a2a2a;
+    }
+    .step:hover .step-dot {
+      border-color: var(--red);
+      background: rgba(204,0,0,0.05);
+      box-shadow: 0 0 20px rgba(204,0,0,0.2);
+      color: var(--red);
+    }
+    .step h3 { font-size: 0.88rem; margin-bottom: 0.5rem; }
+    .step p { font-size: 0.8rem; }
+
+    /* ── QC + COSTS ── */
+    .ops-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      margin-top: 5rem;
+      padding-top: 5rem;
+      border-top: 1px solid #1a1a1a;
+      align-items: start;
+    }
+    .qc-list { display: flex; flex-direction: column; gap: 0; margin-top: 1.5rem; }
+    .qc-row {
+      display: flex; align-items: center; gap: 1.2rem;
+      padding: 1.1rem 0;
+      border-bottom: 1px solid #111;
+      transition: border-color var(--transition);
+    }
+    .qc-row:hover { border-color: #2a2a2a; }
+    .qc-check {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 1px solid var(--red);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .qc-check svg { opacity: 0.6; }
+    .qc-row span { font-size: 0.85rem; color: #aaa; }
+    .costs-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-top: 1.5rem; }
+    .cost-group h3 { font-size: 0.78rem; margin-bottom: 1rem; }
+    .cost-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .cost-list li {
+      font-size: 0.82rem; color: #3d3d3d;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .cost-list li .cnum {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #151515;
+      border: 1px solid #1e1e1e;
+      font-size: 0.65rem;
+      color: var(--red);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── VALUES ── */
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .val-card {
+      background: var(--card);
+      border: 1px solid #1a1a1a;
+      border-radius: 14px;
+      padding: 2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    }
+    .val-card:hover {
+      border-color: rgba(204,0,0,0.25);
+      box-shadow: 0 0 50px rgba(204,0,0,0.07), 0 20px 60px rgba(0,0,0,0.4);
+      transform: translateY(-6px);
+    }
+    .val-card .val-label {
+      font-family: var(--font-d);
+      font-size: 0.62rem;
+      letter-spacing: 0.3em;
+      color: var(--red);
+      opacity: 0.5;
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+    }
+
+    /* ── MISSION VISION ── */
+    .mv-strip {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr 1px 1fr;
+      gap: 0;
+      align-items: center;
+    }
+    .mv-block { padding: 2.5rem 3rem; text-align: center; }
+    .mv-block .eyebrow { justify-content: center; color: rgba(255,255,255,0.3); }
+    .mv-block .eyebrow::before { display: none; }
+    .mv-quote {
+      font-size: 1rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.7;
+      margin: 0;
+    }
+    .mv-line { height: 60px; background: rgba(255,255,255,0.1); }
+
+    /* ── CONTACT ── */
+    .contact-wrap { max-width: 560px; margin: 0 auto; text-align: center; }
+    .contact-wrap p { max-width: 420px; margin: 0 auto 2.5rem; }
+    .contact-btns { display: flex; gap: 1rem; justify-content: center; }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--dark);
+      border-top: 1px solid #1a1a1a;
+      padding: 3.5rem 3rem;
+      text-align: center;
+      position: relative;
+    }
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 1px;
+      background: var(--red);
+      opacity: 0.4;
+    }
+    .footer-logo {
+      font-family: var(--font-d);
+      font-size: 1.2rem;
+      letter-spacing: 0.25em;
+      color: var(--red);
+      opacity: 0.5;
+      margin-bottom: 0.4rem;
+    }
+    .footer-slogan { color: #2a2a2a; font-size: 0.8rem; font-style: italic; margin-bottom: 1rem; }
+    .footer-copy { color: #555; font-size: 0.72rem; margin: 0; }
+
+    /* ── GLOW ORB ── */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+      opacity: 0.35;
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .hero, .two-col, .market-hero, .pack-layout, .ops-grid { grid-template-columns: 1fr; }
+      .cust-grid { grid-template-columns: 1fr 1fr; }
+      .steps-track { grid-template-columns: 1fr 1fr; }
+      .steps-track::before { display: none; }
+      .factors-grid { grid-template-columns: 1fr 1fr; }
+      .prod-flow { grid-template-columns: 1fr; }
+      .prod-img-slot { grid-column: span 1; }
+      .branding-grid, .promo-grid, .values-grid { grid-template-columns: 1fr; }
+      .ads-layout { grid-template-columns: 1fr; }
+      .ads-main { grid-row: span 1; }
+      .mv-strip { grid-template-columns: 1fr; }
+      .mv-line { display: none; }
+    }
+    @media (max-width: 640px) {
+      .hero { padding: 4rem 1.5rem; }
+      .s { padding: 5rem 1.5rem; }
+      .nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      .cust-grid, .steps-track, .factors-grid, .costs-cols { grid-template-columns: 1fr; }
+      .four-ps { grid-template-columns: 1fr; }
+      .pros-cons-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="nav-logo">ATHLETISM</div>
-    <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="#customize">Customize</a></li>
-      <li><a href="#process">Process</a></li>
-      <li><a href="#ads">Advertising</a></li>
-      <li><a href="#values">Values</a></li>
-      <li><a href="#contact">Order</a></li>
-    </ul>
-  </nav>
+<!-- CURSOR -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-content">
-      <p class="hero-eyebrow">Est. 2026 · Mississauga</p>
-      <h1 class="hero-title">Wear the<br><span class="accent">Game.</span></h1>
-      <p class="hero-slogan">Custom jerseys made for students, by students.</p>
-      <p class="hero-sub">You pick the colour, graphic, name, and number. We handle the rest — delivered to your door.</p>
-      <div class="hero-btns">
-        <a href="#customize" class="btn-primary">Customize Yours</a>
-        <a href="#contact" class="btn-outline">Order Now</a>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">ATHLETISM</div>
+  <ul class="nav-links">
+    <li><a href="#production">Production</a></li>
+    <li><a href="#marketing">Marketing</a></li>
+    <li><a href="#customize">Customize</a></li>
+    <li><a href="#values">Values</a></li>
+    <li><a href="#contact">Order</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content reveal">
+    <p class="hero-eyebrow">Est. 2026 &nbsp;·&nbsp; Mississauga</p>
+    <h1 class="hero-title">Wear<br><span class="line2">the Game.</span></h1>
+    <p class="hero-sub">Custom jerseys made for students, by students. You pick the colour, graphic, name, and number — we handle everything else.</p>
+    <div class="hero-btns">
+      <a href="#customize" class="btn-primary">Customize Yours</a>
+      <a href="#contact" class="btn-outline">Order Now</a>
+    </div>
+  </div>
+  <div class="hero-img reveal" style="transition-delay:0.15s">
+    <div class="img-frame">
+      <img src="images/hero.jpg" alt="Athletism custom jersey" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+      <div class="img-slot" style="display:none; min-height:520px; border-radius:15px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span class="slot-label">hero.jpg</span>
       </div>
     </div>
-    <div class="hero-img-wrap">
-      <img src="images/hero.jpg" alt="Athletism custom jersey" onerror="this.style.display='none'" />
-      <div class="hero-img-placeholder"><span>hero.jpg</span></div>
+    <div class="hero-badge">
+      <div class="badge-val">XS–XXL</div>
+      <div class="badge-lab">Every size, made to order</div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ABOUT -->
-  <section class="section" id="about">
-    <div class="container two-col">
-      <div class="about-img-wrap">
-        <img src="images/about.jpg" alt="About Athletism" onerror="this.style.display='none'" />
-        <div class="img-placeholder"><span>about.jpg</span></div>
-      </div>
-      <div class="about-text">
-        <p class="eyebrow">Who We Are</p>
-        <h2>Built for Athletes.<br>Made to Order.</h2>
-        <p>Athletism is a student-run sportswear brand that turns boring school uniforms into personalized, high-performance jerseys. Every single jersey is custom made — no generic stock, no plain designs.</p>
-        <p>Our jerseys use a <strong>50% polyester / 50% cotton blend</strong> with small breathability pores engineered for heat reduction during high-intensity activity.</p>
-        <p>Available in sizes <strong>XS to XXL</strong>. Red, white, and black colourways — or request a custom colour for your team.</p>
-        <div class="tag-row">
-          <span class="tag">Custom Graphics</span>
-          <span class="tag">Name & Number</span>
-          <span class="tag">XS – XXL</span>
-          <span class="tag">Made to Order</span>
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     PRODUCTION
+══════════════════════════════════════════ -->
+<section class="s" id="production">
+  <div class="wrap">
+
+    <!-- HEADER -->
+    <p class="eyebrow reveal">01 &mdash; Production</p>
+    <h2 class="reveal" style="transition-delay:0.05s">How We<br>Build It.</h2>
+    <p class="section-intro center reveal" style="transition-delay:0.1s">Every jersey follows a quality-controlled production pipeline — from raw fabric to your door.</p>
+
+    <!-- PRODUCTION PROCESS -->
+    <div class="reveal" style="transition-delay:0.15s">
+      <p style="font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:1rem;">The Production Process</p>
+      <div class="prod-flow">
+        <div class="prod-panel">
+          <div class="prod-num">01</div>
+          <h3>Cut &amp; Construct</h3>
+          <p>We cut the jersey panels to your exact size first, then sew all seams to form the complete jersey before anything is printed.</p>
+          <div class="sub-items">
+            <div class="sub-item">50/50 polyester-cotton blend</div>
+            <div class="sub-item">Precision panel cutting per size</div>
+            <div class="sub-item">High-speed seam stitching</div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CUSTOMIZE -->
-  <section class="section section-dark" id="customize">
-    <div class="container">
-      <p class="eyebrow center">Make It Yours</p>
-      <h2 class="center">How to Customize</h2>
-      <p class="section-sub center">Four simple choices. One jersey that's completely yours.</p>
-      <div class="customize-grid">
-
-        <div class="customize-card">
-          <div class="customize-num">01</div>
-          <h3>Pick Your Colour</h3>
-          <p>Choose red, white, or black — or request a custom team colour at checkout.</p>
-          <img src="images/colour.jpg" alt="Colour options" onerror="this.style.display='none'" />
-          <div class="img-placeholder small"><span>colour.jpg</span></div>
+        <div class="prod-panel">
+          <div class="prod-num">02</div>
+          <h3>Print &amp; Customise</h3>
+          <p>Once the jersey is complete, the custom graphic is dye-printed directly on. Name, number, and any extras are added on request.</p>
+          <div class="sub-items">
+            <div class="sub-item">Dye-print applied after jersey is built</div>
+            <div class="sub-item">Name &amp; number optional</div>
+            <div class="sub-item">Custom colour available</div>
+          </div>
         </div>
-
-        <div class="customize-card">
-          <div class="customize-num">02</div>
-          <h3>Add Your Graphic</h3>
-          <p>Send us your logo, school crest, or any design. We dye-print it directly on the jersey.</p>
-          <img src="images/graphic.jpg" alt="Custom graphic" onerror="this.style.display='none'" />
-          <div class="img-placeholder small"><span>graphic.jpg</span></div>
-        </div>
-
-        <div class="customize-card">
-          <div class="customize-num">03</div>
-          <h3>Name & Number</h3>
-          <p>Add your name and number to the back for a small extra charge. Rep your identity.</p>
-          <img src="images/name.jpg" alt="Name and number" onerror="this.style.display='none'" />
-          <div class="img-placeholder small"><span>name.jpg</span></div>
-        </div>
-
-        <div class="customize-card">
-          <div class="customize-num">04</div>
-          <h3>Choose Your Size</h3>
-          <p>Each panel is precision-cut to your exact size — XS, S, M, L, XL, or XXL.</p>
-          <img src="images/size.jpg" alt="Size chart" onerror="this.style.display='none'" />
-          <div class="img-placeholder small"><span>size.jpg</span></div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- PROCESS -->
-  <section class="section" id="process">
-    <div class="container">
-      <p class="eyebrow center">Behind the Jersey</p>
-      <h2 class="center">Production Process</h2>
-      <p class="section-sub center">Every jersey goes through four quality-controlled steps before it reaches you.</p>
-      <div class="process-steps">
-
-        <div class="process-step">
-          <div class="step-circle">1</div>
-          <h3>Source</h3>
-          <p>We source premium 75/25 polyester-cotton cloth and vibrant dyes from trusted suppliers.</p>
-        </div>
-        <div class="process-arrow">→</div>
-
-        <div class="process-step">
-          <div class="step-circle">2</div>
-          <h3>Cut</h3>
-          <p>Precision cutting machines shape each panel to your exact size — no guesswork, no waste.</p>
-        </div>
-        <div class="process-arrow">→</div>
-
-        <div class="process-step">
-          <div class="step-circle">3</div>
-          <h3>Sew & Print</h3>
-          <p>High-speed sewing joins every seam, then your custom graphic gets dye-printed on.</p>
-        </div>
-        <div class="process-arrow">→</div>
-
-        <div class="process-step">
-          <div class="step-circle">4</div>
+        <div class="prod-panel" style="border-top:1px solid #1a1a1a;">
+          <div class="prod-num">03</div>
           <h3>Quality Check</h3>
-          <p>Stretch test, rub test, and full appearance inspection before your jersey ships.</p>
+          <p>Correct size confirmed, 50/50 blend verified, stretch and comfort tested before shipping.</p>
+          <div class="sub-items">
+            <div class="sub-item">Size check against order</div>
+            <div class="sub-item">Blend ratio verification</div>
+            <div class="sub-item">Comfort &amp; durability test</div>
+          </div>
         </div>
-
+        <div class="prod-panel" style="border-top:1px solid #1a1a1a;">
+          <div class="prod-num">EX</div>
+          <h3>Example Order Flow</h3>
+          <p>Customer selects red, M, adds school crest &amp; #10 on the back. Jersey is built first, graphic printed second, number added last.</p>
+          <div class="sub-items">
+            <div class="sub-item">Select colour + size</div>
+            <div class="sub-item">Submit graphic file</div>
+            <div class="sub-item">Receive finished jersey</div>
+          </div>
+        </div>
+        <div class="prod-img-slot" style="grid-column:span 2;">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>process-examples.jpg</span>
+        </div>
       </div>
     </div>
-  </section>
 
-  <!-- PACKAGING -->
-  <section class="section section-dark">
-    <div class="container two-col">
+    <!-- 6 FACTORS OF PRODUCTION -->
+    <div style="margin-top:5rem; padding-top:5rem; border-top:1px solid #1a1a1a;">
+      <p class="eyebrow reveal">Production Factors</p>
+      <h2 class="reveal" style="transition-delay:0.05s">6 Factors of<br>Production</h2>
+      <div class="factors-grid reveal" style="transition-delay:0.1s">
+        <div class="factor-card">
+          <div class="factor-label">Factor 01</div>
+          <h3>Natural Resources</h3>
+          <p>Raw cotton and water used in fabric production — the physical inputs that begin every jersey.</p>
+          <div class="factor-img">natural-resources.jpg</div>
+        </div>
+        <div class="factor-card">
+          <div class="factor-label">Factor 02</div>
+          <h3>Labour</h3>
+          <p>The skilled workers who cut, sew, and print each jersey by hand and machine.</p>
+          <div class="factor-img">labour.jpg</div>
+        </div>
+        <div class="factor-card">
+          <div class="factor-label">Factor 03</div>
+          <h3>Capital</h3>
+          <p>The machines, tools, and equipment — sewing machines, cutters, dye printers — used in production.</p>
+          <div class="factor-img">capital.jpg</div>
+        </div>
+        <div class="factor-card">
+          <div class="factor-label">Factor 04</div>
+          <h3>Information</h3>
+          <p>Customer order data, size specs, design files, and supplier details that guide every production step.</p>
+          <div class="factor-img">information.jpg</div>
+        </div>
+        <div class="factor-card">
+          <div class="factor-label">Factor 05</div>
+          <h3>Management</h3>
+          <p>The team that coordinates sourcing, production timelines, quality checks, and delivery.</p>
+          <div class="factor-img">management.jpg</div>
+        </div>
+        <div class="factor-card" style="background:#0d0d0d; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:0.5rem;">
+          <p style="font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:#555; margin:0;">All 6 factors working together</p>
+          <p style="font-size:0.78rem; color:#555; margin:0;">Natural Resources + Labour + Capital + Information + Management</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COSTS -->
+    <div class="ops-grid reveal">
       <div>
-        <p class="eyebrow">Packaging</p>
-        <h2>Packaged<br>with <span class="accent">Purpose.</span></h2>
-        <p>Every Athletism jersey arrives in branded packaging designed to protect and impress. Our packaging is built around three core functions:</p>
-        <div class="pack-cards">
-          <div class="pack-card">
-            <span class="pack-icon">👁️</span>
+        <p class="eyebrow">Variable Costs</p>
+        <h3 style="font-size:1.1rem; margin-bottom:1rem;">What Changes<br>Per Jersey</h3>
+        <p style="font-size:0.85rem;">These costs scale with every order — the raw materials that go into each unit.</p>
+        <div class="cost-list" style="margin-top:1.5rem; gap:0.7rem; display:flex; flex-direction:column;">
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">1</span>Cotton fabric</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">2</span>Polyester fabric</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">3</span>Sewing kits</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">4</span>Thread</li>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">Fixed Expenses</p>
+        <h3 style="font-size:1.1rem; margin-bottom:1rem;">What We Pay<br>Regardless</h3>
+        <p style="font-size:0.85rem;">Ongoing business overhead that stays constant no matter the order volume.</p>
+        <div class="cost-list" style="margin-top:1.5rem; gap:0.7rem; display:flex; flex-direction:column;">
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">1</span>Taxes</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">2</span>Bills / Rent</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">3</span>Salaries</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">4</span>Transportation</li>
+          <li style="display:flex; align-items:center; gap:0.8rem; font-size:0.85rem; color:#999; list-style:none;"><span class="cnum">5</span>Electrical Utilities</li>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════════
+     MARKETING
+══════════════════════════════════════════ -->
+<section class="s s-dark" id="marketing">
+  <div class="wrap">
+
+    <p class="eyebrow reveal">02 &mdash; Marketing</p>
+    <h2 class="reveal" style="transition-delay:0.05s">How We<br>Reach You.</h2>
+
+    <!-- MARKETING MIX: 4 P'S & 2 C'S -->
+    <div class="market-hero reveal" style="transition-delay:0.1s">
+      <div>
+        <p style="font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:1.5rem;">Marketing Mix</p>
+        <h3 style="font-size:1.4rem; margin-bottom:0.8rem; font-family: 'Arial Black', sans-serif; text-transform:uppercase; letter-spacing:-0.01em;">4 P's &amp; 2 C's</h3>
+        <p>Our marketing mix combines the classic four P's with two customer-focused C's — keeping the student buyer at the center of every decision.</p>
+        <div class="four-ps">
+          <div class="ps-cell">
+            <div class="ps-letter">P</div>
+            <h3>Product</h3>
+            <p>Custom 50/50 jerseys in XS–XXL with dye-printed graphics and optional name + number.</p>
+          </div>
+          <div class="ps-cell">
+            <div class="ps-letter">P</div>
+            <h3>Price</h3>
+            <p>Affordable for students. Transparent pricing, no hidden fees, discount codes available.</p>
+          </div>
+          <div class="ps-cell">
+            <div class="ps-letter">P</div>
+            <h3>Place</h3>
+            <p>Direct-to-door. Orders taken via Instagram DM or email, shipped to your address.</p>
+          </div>
+          <div class="ps-cell">
+            <div class="ps-letter">P</div>
+            <h3>Promotion</h3>
+            <p>Instagram Reels, Meme Monday campaigns, and athlete discount codes drive awareness.</p>
+          </div>
+          <div class="ps-cell" style="border-top:1px solid #1a1a1a;">
+            <div class="ps-letter" style="color:#aaa; opacity:0.4;">C</div>
+            <h3>Customer</h3>
+            <p>Student athletes aged 13–18 at Mississauga-area schools seeking standout teamwear.</p>
+          </div>
+          <div class="ps-cell" style="border-top:1px solid #1a1a1a;">
+            <div class="ps-letter" style="color:#aaa; opacity:0.4;">C</div>
+            <h3>Competition</h3>
+            <p>Generic jersey retailers and fast-fashion sportswear with no personalisation options.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="img-slot" style="min-height:380px; border-radius:14px;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>marketing-mix.jpg</span>
+        </div>
+        <div class="img-slot img-slot-sm" style="margin-top:1.5rem; border-radius:14px;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>mix-example.jpg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANDING -->
+    <div class="branding-block reveal">
+      <p class="eyebrow">Branding</p>
+      <h2>Three Parts<br>of Branding</h2>
+      <p style="max-width:500px;">Athletism's brand identity is built on recognition, differentiation, and emotional connection — the three pillars that make a brand stick.</p>
+      <div class="branding-grid">
+        <div class="brand-card">
+          <div class="brand-img-slot">brand-identity.jpg</div>
+          <p style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.5rem;">Part 01</p>
+          <h3>Brand Name &amp; Identity</h3>
+          <p>The word "Athletism" communicates sport and style. Paired with our red-on-black palette, it's unmistakable.</p>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img-slot">branding-id.jpg</div>
+          <p style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.5rem;">Part 02</p>
+          <h3>Branding Identification</h3>
+          <p>Consistent colours, typography, and logo placement ensure every touchpoint — from packaging to Instagram — is instantly recognisable as Athletism.</p>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img-slot">logo-types.jpg</div>
+          <p style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.5rem;">Part 03</p>
+          <h3>3 Types of Logos</h3>
+          <p>Wordmark for official use, symbol mark for social avatars, and combination mark for packaging and jerseys.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PACKAGING -->
+    <div class="pack-block reveal">
+      <p class="eyebrow">Packaging</p>
+      <h2>Packaged<br>with Purpose.</h2>
+      <div class="pack-layout">
+        <div class="pack-img-main">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:#222;">packaging.jpg</span>
+        </div>
+        <div class="pack-functions">
+          <p style="font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:1rem;">Functions of Packaging</p>
+          <div class="pack-fn">
+            <div class="pack-fn-num">01</div>
             <div>
               <h3>Appearance</h3>
-              <p>Clean, bold branding with our logo and slogan — recognizable from the moment it arrives.</p>
+              <p>Bold Athletism branding visible from the moment it arrives — the unboxing is part of the product experience.</p>
             </div>
           </div>
-          <div class="pack-card">
-            <span class="pack-icon">🤲</span>
+          <div class="pack-fn">
+            <div class="pack-fn-num">02</div>
             <div>
               <h3>Convenience</h3>
-              <p>Resealable opening, built-in handles, lightweight and easy to carry or store.</p>
+              <p>Resealable, lightweight, and handle-ready — easy to carry home from school or store in a locker.</p>
             </div>
           </div>
-          <div class="pack-card">
-            <span class="pack-icon">🛡️</span>
+          <div class="pack-fn">
+            <div class="pack-fn-num">03</div>
             <div>
               <h3>Protection</h3>
-              <p>Multi-layered and air-sealed to keep your jersey wrinkle-free and damage-proof in transit.</p>
+              <p>Multi-layered and air-sealed to deliver the jersey wrinkle-free and undamaged regardless of transit conditions.</p>
+            </div>
+          </div>
+          <div style="margin-top:1.5rem; border-top:1px solid #111; padding-top:1.5rem;">
+            <p style="font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.8rem;">Packaging Example</p>
+            <div class="img-slot img-slot-sm">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <span>packaging-example.jpg</span>
             </div>
           </div>
         </div>
       </div>
-      <div class="about-img-wrap">
-        <img src="images/packaging.jpg" alt="Athletism packaging" onerror="this.style.display='none'" />
-        <div class="img-placeholder"><span>packaging.jpg</span></div>
-      </div>
     </div>
-  </section>
 
-  <!-- ADVERTISING -->
-  <section class="section" id="ads">
-    <div class="container">
-      <p class="eyebrow center">How We Reach You</p>
-      <h2 class="center">Advertising & Promotion</h2>
-      <p class="section-sub center">We go where students are — Instagram Reels, school networks, and word of mouth.</p>
-
-      <div class="ads-grid">
-
-        <div class="ads-card">
-          <div class="ads-icon">📱</div>
-          <h3>Instagram Reels & Posts</h3>
-          <p>Our primary channel. Reels targeted at local teens and school communities — high-hook content designed to stop the scroll.</p>
-          <div class="pros-cons">
-            <div class="pros">
-              <p class="pc-label green">PROS</p>
-              <ul>
-                <li>Wide reach via sponsored athletes</li>
-                <li>Targets fashion, sport & school demographics</li>
-                <li>Extra revenue from posting + selling collab</li>
+    <!-- ADVERTISING -->
+    <div class="ads-block reveal">
+      <p class="eyebrow">Types of Advertising</p>
+      <h2>How We<br>Get Noticed.</h2>
+      <div class="ads-layout">
+        <div class="ads-main">
+          <div class="ads-tag">Primary Channel</div>
+          <h3 style="font-size:1.15rem; margin-bottom:0.8rem;">Instagram Reels &amp; Posts</h3>
+          <p>Our core advertising channel. Short-form Reels targeted at local teens and school communities — scroll-stopping content that converts views into orders.</p>
+          <div class="pros-cons-grid">
+            <div class="pc-col">
+              <p class="pc-label g">Pros</p>
+              <ul class="pc-list">
+                <li>Wide reach via sponsored student athletes</li>
+                <li>Precisely targets fashion, sport &amp; school demographics</li>
+                <li>Posting revenue offsets sponsorship cost</li>
               </ul>
             </div>
-            <div class="cons">
-              <p class="pc-label red">CONS</p>
-              <ul>
-                <li>Ads can be skipped</li>
+            <div class="pc-col">
+              <p class="pc-label r">Cons</p>
+              <ul class="pc-list">
+                <li>Ads can be skipped after 3 seconds</li>
                 <li>Requires consistent high-quality content</li>
-                <li>Costly to sponsor athletes upfront</li>
+                <li>Upfront cost to sponsor athletes</li>
               </ul>
             </div>
           </div>
-        </div>
-
-        <div class="ads-card highlight-card">
-          <div class="ads-icon">🎭</div>
-          <h3>Meme Monday Campaign</h3>
-          <p>Weekly student-led meme contests shared across school network tags. High-hook content that battles short attention spans and drives organic reach.</p>
-          <div class="prize-box">
-            <p class="prize-label">GRAND PRIZE</p>
-            <p class="prize-text">Free Custom Jersey<br>+ School-Wide Discount Codes</p>
+          <div class="img-slot img-slot-sm" style="margin-top:auto; padding-top:2rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>instagram-ad.jpg</span>
           </div>
         </div>
-
-        <div class="ads-card">
-          <div class="ads-icon">💸</div>
+        <div class="ads-sub">
+          <div class="ads-tag">Campaign</div>
+          <h3>Meme Monday</h3>
+          <p>Weekly student-led meme contests tagged across school networks. Organic reach driven by real students — battles short attention spans with humour.</p>
+          <div style="background:#1a0a0a; border:1px solid rgba(204,0,0,0.15); border-radius:10px; padding:1.4rem; margin-top:1.2rem; text-align:center;">
+            <p style="font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(204,0,0,0.7); margin-bottom:0.4rem;">Grand Prize</p>
+            <p style="font-size:0.95rem; font-weight:700; color:var(--white); margin:0; line-height:1.5;">Free Custom Jersey<br><span style="color:#aaa; font-size:0.8rem; font-weight:400;">+ School-wide discount codes</span></p>
+          </div>
+        </div>
+        <div class="ads-sub">
+          <div class="ads-tag">Referral</div>
           <h3>Athlete Discount Codes</h3>
-          <p>We sponsor student athletes and give them a personal discount code. Every sale made through their code earns them a percentage — driving both sales and loyalty.</p>
-          <ul class="simple-list">
-            <li>✔ Athlete gets a personal code</li>
-            <li>✔ Followers buy using athlete's code</li>
-            <li>✔ Athlete earns % share per sale</li>
-            <li>✔ Company drives steady repeat buyers</li>
-          </ul>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- VALUES -->
-  <section class="section section-dark" id="values">
-    <div class="container">
-      <p class="eyebrow center">What Drives Us</p>
-      <h2 class="center">Our Core Values</h2>
-      <div class="values-grid">
-
-        <div class="value-card">
-          <div class="value-icon">🤝</div>
-          <h3>Customer Care</h3>
-          <p>We treat every customer like family. Your order isn't just a transaction — it's a relationship we take seriously from the first DM to delivery.</p>
-        </div>
-
-        <div class="value-card">
-          <div class="value-icon">⚖️</div>
-          <h3>Uncompromising Ethics</h3>
-          <p>Absolute honesty in material sourcing and pricing. No hidden fees, no misleading claims. What you see is exactly what you get.</p>
-        </div>
-
-        <div class="value-card">
-          <div class="value-icon">🏆</div>
-          <h3>Company Pride</h3>
-          <p>Every team member works with an owner's mindset. We're not just employees — we're invested in Athletism's success as much as you are.</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- MISSION / VISION -->
-  <section class="section section-red">
-    <div class="container">
-      <div class="mv-grid">
-        <div class="mv-block">
-          <p class="eyebrow">Our Mission</p>
-          <p class="mv-text">"Everyone deserves quality, accessible sportswear."</p>
-        </div>
-        <div class="mv-divider"></div>
-        <div class="mv-block">
-          <p class="eyebrow">Our Vision</p>
-          <p class="mv-text">"Reach 100% eco-friendly sportswear that is still affordable, comfortable, and stylish."</p>
-        </div>
-        <div class="mv-divider"></div>
-        <div class="mv-block">
-          <p class="eyebrow">Our Slogan</p>
-          <p class="mv-text">"Comfort and looks wherever you go."</p>
+          <p>Student athletes receive a personal code. Every sale through their code earns them a percentage — loyalty built into the model.</p>
+          <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:1rem;">
+            <div style="font-size:0.8rem; color:#999; display:flex; align-items:center; gap:0.6rem;"><span style="color:var(--red); font-size:0.7rem;">+</span> Athlete receives personal code</div>
+            <div style="font-size:0.8rem; color:#999; display:flex; align-items:center; gap:0.6rem;"><span style="color:var(--red); font-size:0.7rem;">+</span> Followers buy with athlete's code</div>
+            <div style="font-size:0.8rem; color:#999; display:flex; align-items:center; gap:0.6rem;"><span style="color:var(--red); font-size:0.7rem;">+</span> Athlete earns % per sale</div>
+            <div style="font-size:0.8rem; color:#999; display:flex; align-items:center; gap:0.6rem;"><span style="color:var(--red); font-size:0.7rem;">+</span> Drives steady repeat buyers</div>
+          </div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- CONTACT -->
-  <section class="section" id="contact">
-    <div class="container center">
-      <p class="eyebrow">Ready to Order?</p>
-      <h2>Get Your Custom Jersey</h2>
-      <p class="contact-sub">DM us on Instagram or email us with your colour, graphic, size, name, and number. We'll send you a quote and get started.</p>
-      <div class="contact-links">
-        <a href="#" class="btn-primary">📲 DM on Instagram</a>
-        <a href="mailto:athletism@email.com" class="btn-outline">✉️ Email Us</a>
+    <!-- SALES PROMOTIONS -->
+    <div class="promo-block reveal">
+      <p class="eyebrow">Sales Promotions</p>
+      <h2>Promotions<br>That Convert.</h2>
+      <p style="max-width:480px;">We use targeted sales promotions to lower the barrier to first purchase and reward loyal customers — each with a clear cost-to-benefit calculation.</p>
+      <div class="promo-grid">
+        <div class="promo-card">
+          <div class="card-img-slot">promo-forms.jpg</div>
+          <p style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.5rem;">Forms of Sales Promotions</p>
+          <h3>Discount Codes</h3>
+          <p>Athlete referral codes, seasonal school-wide discounts, and first-order deals bring new customers in at lower risk.</p>
+        </div>
+        <div class="promo-card">
+          <div class="card-img-slot">cost-benefit.jpg</div>
+          <p style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.5rem;">Cost vs. Benefits</p>
+          <h3>Margin vs. Volume</h3>
+          <p>Discounts reduce per-unit margin but drive volume and brand awareness — long-term loyalty outweighs short-term revenue loss.</p>
+        </div>
+        <div class="promo-card">
+          <div class="card-img-slot">promo-example.jpg</div>
+          <p style="font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:#aaa; margin-bottom:0.5rem;">Example</p>
+          <h3>Team Bundle Deal</h3>
+          <p>Order 10+ jerseys for your school team and unlock a bulk discount — perfect for sports day or intramural leagues.</p>
+        </div>
       </div>
     </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <p class="footer-logo">ATHLETISM</p>
-      <p class="footer-slogan">Wear the Game.</p>
-      <p class="footer-copy">© 2026 Athletism — Mississauga, ON · Custom School Jerseys · Built by Kayden N.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CUSTOMIZE -->
+<section class="s" id="customize">
+  <div class="wrap">
+    <p class="eyebrow center reveal">Make It Yours</p>
+    <h2 class="center reveal" style="transition-delay:0.05s">How to Customize</h2>
+    <p class="section-intro center reveal" style="transition-delay:0.1s">Four choices. One jersey that's completely yours.</p>
+    <div class="cust-grid reveal" style="transition-delay:0.15s">
+      <div class="cust-card">
+        <div class="cust-img-slot">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>colour.jpg</span>
+        </div>
+        <div class="cust-body">
+          <div class="cust-num">STEP 01</div>
+          <h3>Pick Your Colour</h3>
+          <p>Red, white, or black — or request a custom team colour at checkout.</p>
+        </div>
+      </div>
+      <div class="cust-card">
+        <div class="cust-img-slot">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>graphic.jpg</span>
+        </div>
+        <div class="cust-body">
+          <div class="cust-num">STEP 02</div>
+          <h3>Add Your Graphic</h3>
+          <p>Send your logo or school crest. We dye-print it after the jersey is complete.</p>
+        </div>
+      </div>
+      <div class="cust-card">
+        <div class="cust-img-slot">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>name-number.jpg</span>
+        </div>
+        <div class="cust-body">
+          <div class="cust-num">STEP 03</div>
+          <h3>Name &amp; Number</h3>
+          <p>Optional add-on. Rep your identity on the back for a small extra charge.</p>
+        </div>
+      </div>
+      <div class="cust-card">
+        <div class="cust-img-slot">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>size-chart.jpg</span>
+        </div>
+        <div class="cust-body">
+          <div class="cust-num">STEP 04</div>
+          <h3>Choose Your Size</h3>
+          <p>XS, S, M, L, XL, or XXL. Each panel precision-cut to your exact size.</p>
+        </div>
+      </div>
     </div>
-  </footer>
+  </div>
+</section>
 
+<div class="divider"></div>
+
+<!-- VALUES -->
+<section class="s s-dark" id="values">
+  <div class="wrap">
+    <p class="eyebrow center reveal">What Drives Us</p>
+    <h2 class="center reveal" style="transition-delay:0.05s">Our Core Values</h2>
+    <div class="values-grid reveal" style="transition-delay:0.1s">
+      <div class="val-card">
+        <div class="val-label">Value 01</div>
+        <h3>Affordable</h3>
+        <p>Quality sportswear shouldn't break the bank. Every price point is built with the student budget in mind — no compromise on materials.</p>
+      </div>
+      <div class="val-card">
+        <div class="val-label">Value 02</div>
+        <h3>High-Quality</h3>
+        <p>Every jersey passes a full QC checklist before it ships. Correct size, verified blend, comfort tested. We don't ship anything we wouldn't wear.</p>
+      </div>
+      <div class="val-card">
+        <div class="val-label">Value 03</div>
+        <h3>Customer &amp; Promotion</h3>
+        <p>Your experience drives everything — from first DM to delivery. And our athlete promotion model means loyal customers get rewarded.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MISSION / VISION -->
+<section class="s s-red">
+  <div class="wrap">
+    <div class="mv-strip reveal">
+      <div class="mv-block">
+        <p class="eyebrow">Our Mission</p>
+        <p class="mv-quote">"To provide affordable, high-quality jerseys for school teams."</p>
+      </div>
+      <div class="mv-line"></div>
+      <div class="mv-block">
+        <p class="eyebrow">Our Vision</p>
+        <p class="mv-quote">"Expand to schools everywhere — the go-to jersey brand for every team."</p>
+      </div>
+      <div class="mv-line"></div>
+      <div class="mv-block">
+        <p class="eyebrow">Our Slogan</p>
+        <p class="mv-quote">"Comfort and looks wherever you go."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="s" id="contact">
+  <div class="wrap">
+    <div class="contact-wrap reveal">
+      <p class="eyebrow center">Ready to Order?</p>
+      <h2 class="center">Get Your<br>Custom Jersey</h2>
+      <p class="center">DM us on Instagram or email us with your colour, graphic, size, name, and number. We'll send a quote and get started.</p>
+      <div class="contact-btns">
+        <a href="#" class="btn-primary">DM on Instagram</a>
+        <a href="mailto:athletism@email.com" class="btn-outline">Email Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">ATHLETISM</div>
+  <div class="footer-slogan">Wear the Game.</div>
+  <div class="footer-copy">© 2026 Athletism — Mississauga, ON &nbsp;·&nbsp; Custom School Jerseys &nbsp;·&nbsp; Built by Kayden N.</div>
+</footer>
+
+<script>
+  /* ── CUSTOM CURSOR ── */
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.left = mx + 'px';
+    dot.style.top  = my + 'px';
+  });
+
+  (function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animRing);
+  })();
+
+  /* ── CURSOR TRAIL ── */
+  const trail = [];
+  const TRAIL_LEN = 12;
+  for (let i = 0; i < TRAIL_LEN; i++) {
+    const p = document.createElement('div');
+    p.className = 'trail-particle';
+    p.style.opacity = ((TRAIL_LEN - i) / TRAIL_LEN * 0.5).toString();
+    p.style.width = p.style.height = (5 - i * 0.3) + 'px';
+    document.body.appendChild(p);
+    trail.push({ el: p, x: 0, y: 0 });
+  }
+
+  document.addEventListener('mousemove', e => {
+    trail[0].x = e.clientX;
+    trail[0].y = e.clientY;
+  });
+
+  (function animTrail() {
+    for (let i = trail.length - 1; i > 0; i--) {
+      trail[i].x += (trail[i-1].x - trail[i].x) * 0.35;
+      trail[i].y += (trail[i-1].y - trail[i].y) * 0.35;
+      trail[i].el.style.left = trail[i].x + 'px';
+      trail[i].el.style.top  = trail[i].y + 'px';
+    }
+    trail[0].el.style.left = trail[0].x + 'px';
+    trail[0].el.style.top  = trail[0].y + 'px';
+    requestAnimationFrame(animTrail);
+  })();
+
+  /* cursor expand on links */
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      ring.style.width = '52px';
+      ring.style.height = '52px';
+      ring.style.borderColor = 'rgba(204,0,0,0.7)';
+    });
+    el.addEventListener('mouseleave', () => {
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+      ring.style.borderColor = 'rgba(204,0,0,0.5)';
+    });
+  });
+
+  /* ── SCROLL REVEAL ── */
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => obs.observe(r));
+</script>
 </body>
 </html>
