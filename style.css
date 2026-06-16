@@ -1,34 +1,4 @@
-/* === TOKENS === */
-:root {
-  --black:   #0a0a0a;
-  --dark:    #111111;
-  --mid:     #1a1a1a;
-  --card:    #1e1e1e;
-  --white:   #f0f0f0;
-  --red:     #cc0000;
-  --red-dark:#990000;
-  --red-glow:rgba(204,0,0,0.15);
-  --muted:   #777;
-  --border:  #2a2a2a;
-  --font-display: 'Arial Black', Impact, sans-serif;
-  --font-body:    Arial, Helvetica, sans-serif;
-  --radius:  10px;
-  --max-w:   1100px;
-}
 
-/* === RESET === */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: var(--font-body); background: var(--black); color: var(--white); line-height: 1.7; }
-img { display: block; width: 100%; border-radius: var(--radius); }
-a { text-decoration: none; }
-ul { list-style: none; }
-
-/* === NAV === */
-.nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 1.1rem 2.5rem;
   background: var(--dark);
   border-bottom: 2px solid var(--red);
